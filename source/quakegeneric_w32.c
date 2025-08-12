@@ -19,8 +19,7 @@ unsigned char* frontbuffer;
 HWND hwnd;
 int WINDOW_WIDTH, WINDOW_HEIGHT;
 char* quake_title = "Quake for Windows";
-int mouse_x, mouse_y;
-int old_mouse_x, old_mouse_y;
+int mouse_xi, mouse_yi;
 
 #define OLD_WINDOWS
 
@@ -99,6 +98,8 @@ int KeyPop(int *down, int *key)
 		*key = -*key;
 	keybuffer_start = (keybuffer_start + 1) % KEYBUFFERSIZE;
 	keybuffer_len--;
+
+	return 1;
 }
 
 int KeyPush(int down, int key)
@@ -110,6 +111,8 @@ int KeyPush(int down, int key)
 	}
 	keybuffer[(keybuffer_start + keybuffer_len) % KEYBUFFERSIZE] = key;
 	keybuffer_len++;
+
+	return 1;
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
@@ -197,12 +200,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam){
 						  old_bmp = SelectObject(hdc_bmp, backBitmap);
 						  StretchBlt(globalHdc, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, hdc_bmp, 0, 0, 320, 200, SRCCOPY);
 						  DeleteObject(old_bmp);
+						  break;
 		}
 
 		default:{
-			return DefWindowProc(hWnd, msg, wParam, lParam);
 		}
 	}
+	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
 void QG_Init(){
@@ -231,7 +235,7 @@ void QG_Init(){
 	bmi->bmiHeader.biCompression = BI_RGB;
 
 	hdcScreen = GetDC(NULL);
-	backBitmap = CreateDIBSection(hdcScreen, bmi, DIB_RGB_COLORS, (void**)(&frontbuffer), NULL, NULL);
+	backBitmap = CreateDIBSection(hdcScreen, bmi, DIB_RGB_COLORS, (void**)(&frontbuffer), NULL, 0);
 	ReleaseDC(NULL, hdcScreen);
 
 	wc.style = 0;
@@ -258,11 +262,15 @@ int QG_GetKey(int* down, int *key){
 	return KeyPop(down, key);
 }
 
-void QG_GetMouseMove(int *x, int *y){
-	*x = mouse_x;
-	*y = mouse_y;
+void QG_GetJoyAxes(float *axes)
+{
+}
 
-	mouse_x = mouse_y = 0;
+void QG_GetMouseMove(int *x, int *y){
+	*x = mouse_xi;
+	*y = mouse_yi;
+
+	mouse_xi = mouse_yi = 0;
 }
 
 void QG_Quit(){
@@ -287,7 +295,7 @@ void QG_SetPalette(unsigned char palette[768]){ //do the whole SetPalette/Select
 	DeleteDC(tempHDC);
 }
 
-void QG_DrawFrame(void* pixels, void* palette){
+void QG_DrawFrame(void* pixels){
 	memcpy(frontbuffer, pixels, 64000);
 	InvalidateRect(hwnd, NULL, 0);
 }
