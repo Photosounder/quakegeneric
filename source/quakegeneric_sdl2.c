@@ -38,7 +38,7 @@ static int keybuffer[KEYBUFFERSIZE];  // circular key buffer
 static int keybuffer_len;  // number of keys in the buffer
 static int keybuffer_start;  // index of next item to be read
 
-static int mouse_x, mouse_y;
+static int mouse_xi, mouse_yi;
 static float joy_axes[QUAKEGENERIC_JOY_MAX_AXES];
 static SDL_Joystick *joystick;
 
@@ -56,7 +56,7 @@ void QG_Init(void)
 
 	keybuffer_len = 0;
 	keybuffer_start = 0;
-	mouse_x = mouse_y = 0;
+	mouse_xi = mouse_yi = 0;
 	memset(joy_axes, 0, sizeof(joy_axes));
 
     if (SDL_NumJoysticks() != 0) {
@@ -245,10 +245,10 @@ void QG_GetJoyAxes(float *axes)
 
 void QG_GetMouseMove(int *x, int *y)
 {
-	*x = mouse_x;
-	*y = mouse_y;
+	*x = mouse_xi;
+	*y = mouse_yi;
 
-	mouse_x = mouse_y = 0;
+	mouse_xi = mouse_yi = 0;
 }
 
 void QG_Quit(void)
@@ -308,8 +308,8 @@ int main(int argc, char *argv[])
 					(void) KeyPush((event.type == SDL_KEYDOWN), ConvertToQuakeKey(event.key.keysym.sym));
 					break;
 				case SDL_MOUSEMOTION:
-					mouse_x += event.motion.xrel;
-					mouse_y += event.motion.yrel;
+					mouse_xi += event.motion.xrel;
+					mouse_yi += event.motion.yrel;
 					break;
 				case SDL_MOUSEBUTTONDOWN:
 				case SDL_MOUSEBUTTONUP:
